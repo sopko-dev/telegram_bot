@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: telegram-bot
+    env: rust
+    buildCommand: cargo build --release
+    startCommand: ./target/release/telegram_bot
+    envVars:
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false

@@ -1,0 +1,24 @@
+# Файли, які Rust створює під час компіляції
+target/
+Cargo.lock
+
+# Файли з токенами (не діліться ними!)
+.env
+*.env
+.env.local
+*.token
+*secret*
+
+# Файли редакторів
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Системні файли
+.DS_Store
+Thumbs.db
+
+# Логи
+*.log

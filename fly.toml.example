@@ -1,0 +1,32 @@
+# fly.toml - приклад конфігурації для Fly.io
+# Скопіюйте цей файл як fly.toml і замініть "ваш-бот-назва" на унікальну назву
+
+app = "ваш-бот-назва"  # Замініть на унікальну назву (тільки маленькі літери, дефіси)
+                        # Наприклад: "ukrainian-bot-cz" або "my-telegram-bot-123"
+primary_region = "fra"  # Регіон: fra (Франкфурт), ams (Амстердам), lhr (Лондон), iad (Вірджинія)
+
+[build]
+  # Fly.io автоматично визначить Rust проект
+
+[env]
+  # Змінні оточення додаються через: fly secrets set TELEGRAM_BOT_TOKEN="ваш_токен"
+
+# Конфігурація для процесу (Telegram бот не потребує HTTP)
+# Але Fly.io може вимагати HTTP порт для health check
+[[services]]
+  internal_port = 8080
+  protocol = "tcp"
+  
+  # HTTP порт для health check (опціонально)
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+  
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+# Альтернативний варіант: процес без HTTP (якщо попередній не працює)
+# [processes]
+#   bot = "./target/release/telegram_bot"
