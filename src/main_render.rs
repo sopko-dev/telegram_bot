@@ -18,30 +18,19 @@ async fn main() {
     println!("Бот готовий до роботи! Натисніть Ctrl+C для зупинки.");
 
     // Запускаємо HTTP сервер для health check в окремому потоці
-    // Render.com автоматично встановлює змінну PORT
     let port = std::env::var("PORT").unwrap_or_else(|_| "8080".to_string());
     let port_clone = port.clone();
-    
+
     thread::spawn(move || {
-        let listener = TcpListener::bind(format!("0.0.0.0:{}", port_clone))
-            .expect("Не вдалося запустити HTTP сервер");
+        let routes = warp::path::end()
+            .map(|| "OK");
+
+        let addr = ([0, 0, 0, 0], port_clone.parse::<u16>().unwrap_or(8080));
         println!("Health check сервер запущено на порту {}", port_clone);
-        
-        for stream in listener.incoming() {
-            match stream {
-                Ok(mut stream) => {
-                    let mut buffer = [0; 1024];
-                    let _ = stream.read(&mut buffer);
-                    
-                    let response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 2\r\n\r\nOK";
-                    let _ = stream.write_all(response.as_bytes());
-                    let _ = stream.flush();
-                }
-                Err(e) => {
-                    eprintln!("Помилка при обробці з'єднання: {}", e);
-                }
-            }
-        }
+
+        warp::serve(routes)
+            .run(addr)
+            .wait();
     });
 
     // Створюємо диспетчер для обробки повідомлень
