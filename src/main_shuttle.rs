@@ -1,50 +1,22 @@
-// Версія main.rs з health check для Render.com + UptimeRobot
-// Цей файл містить мінімальний код з HTTP сервером для health check
-
+// Версія для Shuttle.dev
 use teloxide::prelude::*;
-use std::net::TcpListener;
-use std::io::{Read, Write};
-use std::thread;
+use shuttle_runtime::SecretStore;
 
-#[tokio::main]
-async fn main() {
+#[shuttle_runtime::main]
+async fn main(
+    #[shuttle_secrets::Secrets] secrets: SecretStore,
+) -> shuttle_runtime::ShuttleResult<()> {
     println!("Бот запускається...");
 
-    let bot_token = std::env::var("TELEGRAM_BOT_TOKEN")
-        .expect("TELEGRAM_BOT_TOKEN не знайдено! Будь ласка, встановіть змінну оточення.");
+    let bot_token = secrets
+        .get("TELEGRAM_BOT_TOKEN")
+        .ok_or("TELEGRAM_BOT_TOKEN не знайдено! Будь ласка, встановіть секрет.")?;
 
     let bot = Bot::new(&bot_token);
 
-    println!("Бот готовий до роботи! Натисніть Ctrl+C для зупинки.");
+    println!("Бот готовий до роботи!");
 
-    // Запускаємо HTTP сервер для health check в окремому потоці
-    // Render.com автоматично встановлює змінну PORT
-    let port = std::env::var("PORT").unwrap_or_else(|_| "8080".to_string());
-    let port_clone = port.clone();
-    
-    thread::spawn(move || {
-        let listener = TcpListener::bind(format!("0.0.0.0:{}", port_clone))
-            .expect("Не вдалося запустити HTTP сервер");
-        println!("Health check сервер запущено на порту {}", port_clone);
-        
-        for stream in listener.incoming() {
-            match stream {
-                Ok(mut stream) => {
-                    let mut buffer = [0; 1024];
-                    let _ = stream.read(&mut buffer);
-                    
-                    let response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 2\r\n\r\nOK";
-                    let _ = stream.write_all(response.as_bytes());
-                    let _ = stream.flush();
-                }
-                Err(e) => {
-                    eprintln!("Помилка при обробці з'єднання: {}", e);
-                }
-            }
-        }
-    });
-
-    // Створюємо диспетчер для обробки повідомлень
+    // Створюємо диспетчер
     use dptree;
     Dispatcher::builder(
         bot,
@@ -56,6 +28,8 @@ async fn main() {
         .build()
         .dispatch()
         .await;
+
+    Ok(())
 }
 
 async fn handle_message(bot: Bot, msg: Message) -> ResponseResult<()> {
@@ -65,8 +39,6 @@ async fn handle_message(bot: Bot, msg: Message) -> ResponseResult<()> {
         if text.starts_with('/') {
             let command = text.split('@').next().unwrap_or(text)
                 .split_whitespace().next().unwrap_or(text);
-            
-            println!("Розпізнана команда: {}", command);
             
             match command {
                 "/start" => {
@@ -111,13 +83,10 @@ async fn handle_message(bot: Bot, msg: Message) -> ResponseResult<()> {
                 }
             }
         } else {
-            // Обробка звичайних повідомлень
             let text_lower = text.to_lowercase();
             let response = handle_question(&text_lower);
             bot.send_message(msg.chat.id, response).await?;
         }
-    } else {
-        println!("Бот отримав повідомлення без тексту (можливо фото, відео тощо)");
     }
 
     Ok(())

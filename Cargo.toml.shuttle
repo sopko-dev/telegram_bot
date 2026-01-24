@@ -1,0 +1,15 @@
+[package]
+name = "telegram_bot"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# teloxide - це бібліотека для роботи з Telegram Bot API
+teloxide = "0.17"
+
+# tokio - це бібліотека для асинхронного програмування
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+
+# Shuttle залежності для деплою
+shuttle-runtime = { version = "0.40", features = ["secrets"] }
+shuttle-secrets = "0.40"
