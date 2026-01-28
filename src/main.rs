@@ -22,7 +22,7 @@ async fn main() {
     let port_clone = port.clone();
 
     thread::spawn(move || {
-        let routes = warp::path::end()
+        let app = Router::new().route("/", get(|| async { "OK" }));
             .map(|| "OK");
 
         let addr = ([0, 0, 0, 0], port_clone.parse::<u16>().unwrap_or(8080));
