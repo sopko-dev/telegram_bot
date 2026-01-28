@@ -7,6 +7,7 @@ async fn main() {
     pretty_env_logger::init();
     log::info!("Starting bot...");
 
+    // --- RENDER PORT SETUP ---
     let port: u16 = env::var("PORT")
         .unwrap_or_else(|_| "8080".to_string())
         .parse()
@@ -20,11 +21,11 @@ async fn main() {
 
     log::info!("Web server started on port {}", port);
 
-    let token = std::env::var("TELEGRAM_BOT_TOKEN")
-        .expect("TELEGRAM_BOT_TOKEN environment variable not set");
-    let bot = Bot::new(token);
+    // --- BOT SETUP ---
+    let bot = Bot::from_env();
+    
     teloxide::repl(bot, |bot: Bot, msg: Message| async move {
-        bot.send_message(msg.chat.id, "I am working on Render!").await?;
+        bot.send_message(msg.chat.id, "Bot is running!").await?;
         Ok(())
     }).await;
 }
