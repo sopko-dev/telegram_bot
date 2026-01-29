@@ -23,7 +23,7 @@ async fn main() {
 
     // --- BOT SETUP ---
     let bot = Bot::from_env();
-
+    
     teloxide::repl(bot, |bot: Bot, msg: Message| async move {
         bot.send_message(msg.chat.id, "Bot is running!").await?;
         Ok(())
