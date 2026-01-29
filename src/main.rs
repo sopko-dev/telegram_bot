@@ -22,7 +22,9 @@ async fn main() {
     log::info!("Web server started on port {}", port);
 
     // --- BOT SETUP ---
-    let bot = Bot::from_env();
+    let token = std::env::var("TELEGRAM_BOT_TOKEN")
+        .expect("TELEGRAM_BOT_TOKEN environment variable not set");
+    let bot = Bot::new(token);
     
     teloxide::repl(bot, |bot: Bot, msg: Message| async move {
         bot.send_message(msg.chat.id, "Bot is running!").await?;
