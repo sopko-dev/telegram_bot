@@ -45,8 +45,8 @@ async fn main() {
 }
 
 async fn handle_message(bot: Bot, msg: Message) -> ResponseResult<()> {
-    // Виправлено warning: використовуємо поле .from замість методу .from()
-    if let Some(user) = &msg.from {
+    // ВИПРАВЛЕНО для Render: викликаємо як метод .from()
+    if let Some(user) = msg.from() {
         if user.id == bot.get_me().await?.id {
             return Ok(());
         }
@@ -114,7 +114,6 @@ async fn handle_message(bot: Bot, msg: Message) -> ResponseResult<()> {
     Ok(())
 }
 
-// Функція handle_question тепер точно на місці
 fn handle_question(text: &str) -> &'static str {
     let text_lower = text.to_lowercase();
 
